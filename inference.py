@@ -7,6 +7,7 @@ from glob import glob
 import torch, face_detection
 from models import Wav2Lip
 import platform
+import time
 
 parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
 
@@ -179,6 +180,7 @@ def load_model(path):
 	return model.eval()
 
 def main():
+	start_time_wav2lip = time.time()
 	if not os.path.isfile(args.face):
 		raise ValueError('--face argument must be a valid path to video/image file')
 
@@ -272,9 +274,13 @@ def main():
 			out.write(f)
 
 	out.release()
-
+	end_time_wav2lip = time.time()
+	start_time_avi2mp4 = time.time()
 	command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(args.audio, 'temp/result.avi', args.outfile)
 	subprocess.call(command, shell=platform.system() != 'Windows')
+	end_time_avi2mp4 = time.time()
+	print(f"wav2lip took {end_time_wav2lip - start_time_wav2lip:.2f} seconds to run.")
+	print(f"avi2mp4 took {end_time_avi2mp4 - start_time_avi2mp4:.2f} seconds to run.")
 
 if __name__ == '__main__':
 	main()
